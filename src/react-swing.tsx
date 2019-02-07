@@ -61,7 +61,7 @@ class ReactSwing extends React.Component<IReactSwingProps, IReactSwingState> {
       }
     });
 
-    React.Children.forEach(children, (child: React.ReactChild, index) => {
+    React.Children.forEach(children, (child, index) => {
       const element = this.childElements[index];
 
       if (element && element.current) {
@@ -96,7 +96,7 @@ class ReactSwing extends React.Component<IReactSwingProps, IReactSwingState> {
         }
       });
 
-      React.Children.forEach(children, (child: React.ReactChild, index) => {
+      React.Children.forEach(children, (child, index) => {
         const element = this.childElements[index];
 
         if (element && element.current) {
@@ -137,7 +137,7 @@ class ReactSwing extends React.Component<IReactSwingProps, IReactSwingState> {
 
     return (
       <div {...tagProps}>
-        {React.Children.map(children, (child: React.ReactChild, index) => {
+        {React.Children.map(children, (child, index) => {
           const childProps = Object.keys((child as React.ReactElement<any>).props).reduce((result, key) => {
             if (ReactSwing.EVENTS.indexOf(key as swing.Event) === -1) {
               result[key] = (child as React.ReactElement<any>).props[key];
