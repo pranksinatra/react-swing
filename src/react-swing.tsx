@@ -87,41 +87,27 @@ class ReactSwing extends React.Component<IReactSwingProps, IReactSwingState> {
   componentDidUpdate(prevProps) {
     const { children } = this.props;
 
-    const currentChildrenCount = React.Children.count(children);
-    if (currentChildrenCount > prevProps.children.length) {
-      const stack = swing.Stack(this.props.config || {});
+    // Re-use stack instance instead of re-creating it 
+    const stack = this.state.stack;
+
+    React.Children.forEach(children, (child, index) => {
+
+      // Get HTML element corresponding to Card
+      const element = this.childElements[index];
+      if (!element || !element.current) return;
+
+      // Avoid re-creating Card
+      const existingCard = stack.getCard(element.current);
+      if (existingCard) return;
+
+      // Create new card for element
+      const card = stack.createCard(element.current);
       ReactSwing.EVENTS.forEach(eventName => {
-        if (this.props[eventName]) {
-          stack.on(eventName, this.props[eventName]);
+        if ((child as React.ReactElement<any>).props[eventName]) {
+          card.on(eventName, (child as React.ReactElement<any>).props[eventName]);
         }
       });
-
-      React.Children.forEach(children, (child, index) => {
-        const element = this.childElements[index];
-
-        if (element && element.current) {
-          const card = stack.createCard(element.current);
-          const result = prevProps.children.find(c => {
-            return c.key === (child as React.ReactElement<any>).key;
-          });
-
-          if (!result) {
-            ReactSwing.EVENTS.forEach(eventName => {
-              if ((child as React.ReactElement<any>).props[eventName]) {
-                card.on(eventName, (child as React.ReactElement<any>).props[eventName]);
-              }
-            });
-          }
-        }
-      });
-      this.setState({
-        stack,
-      });
-
-      if (this.props.setStack) {
-        this.props.setStack(stack);
-      }
-    }
+    });
   }
 
   render() {

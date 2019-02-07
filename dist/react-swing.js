@@ -85,37 +85,25 @@ var ReactSwing = /** @class */ (function (_super) {
     ReactSwing.prototype.componentDidUpdate = function (prevProps) {
         var _this = this;
         var children = this.props.children;
-        var currentChildrenCount = React.Children.count(children);
-        if (currentChildrenCount > prevProps.children.length) {
-            var stack_1 = swing.Stack(this.props.config || {});
+        // Re-use stack instance instead of re-creating it 
+        var stack = this.state.stack;
+        React.Children.forEach(children, function (child, index) {
+            // Get HTML element corresponding to Card
+            var element = _this.childElements[index];
+            if (!element || !element.current)
+                return;
+            // Avoid re-creating Card
+            var existingCard = stack.getCard(element.current);
+            if (existingCard)
+                return;
+            // Create new card for element
+            var card = stack.createCard(element.current);
             ReactSwing.EVENTS.forEach(function (eventName) {
-                if (_this.props[eventName]) {
-                    stack_1.on(eventName, _this.props[eventName]);
+                if (child.props[eventName]) {
+                    card.on(eventName, child.props[eventName]);
                 }
             });
-            React.Children.forEach(children, function (child, index) {
-                var element = _this.childElements[index];
-                if (element && element.current) {
-                    var card_2 = stack_1.createCard(element.current);
-                    var result = prevProps.children.find(function (c) {
-                        return c.key === child.key;
-                    });
-                    if (!result) {
-                        ReactSwing.EVENTS.forEach(function (eventName) {
-                            if (child.props[eventName]) {
-                                card_2.on(eventName, child.props[eventName]);
-                            }
-                        });
-                    }
-                }
-            });
-            this.setState({
-                stack: stack_1,
-            });
-            if (this.props.setStack) {
-                this.props.setStack(stack_1);
-            }
-        }
+        });
     };
     ReactSwing.prototype.render = function () {
         var _this = this;
